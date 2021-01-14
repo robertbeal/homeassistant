@@ -1,0 +1,103 @@
+homeassistant:
+  packages: !include_dir_named packages
+  customize_glob:
+    # motion
+    "binary_sensor.*_motion":
+      device_class: motion
+
+    # doors
+    "binary_sensor.*_door":
+      icon: mdi:door
+
+    # gates
+    "binary_sensor.*_gate":
+      icon: mdi:door
+
+    # locks
+    "binary_sensor.*_lock":
+      device_class: none
+
+    # misc
+    "sensor.*_humidity":
+      icon: mdi:water
+
+    # tv cam switches
+    "switch.*_tv_*":
+      icon: mdi:video
+
+api:
+cloud:
+config:
+discovery:
+hassio:
+history:
+logbook:
+mobile_app:
+person:
+sun:
+system_health:
+updater:
+frontend:
+recorder:
+  purge_keep_days: 3
+
+device_tracker:
+  - platform: bluetooth_tracker
+
+input_boolean:
+  alarm:
+    name: Alarm
+  on_holiday:
+    name: On Holiday
+  cleaned_downstairs:
+    name: Cleaned Downstairs
+  cleaned_upstairs:
+    name: Cleaned Upstairs
+
+timer:
+  hifi_timer:
+    duration: "00:10:00"
+
+sensor:
+  - platform: command_line
+    name: CPU Temperature
+    command: "cat /sys/class/thermal/thermal_zone0/temp"
+    unit_of_measurement: "°C"
+    value_template: '{{ value | multiply(0.001) | round(1) }}'
+
+binary_sensor:
+  - platform: ping
+    name: Internet
+    host: 1.1.1.1
+    scan_interval: 60
+  - platform: ping
+    name: DNS
+    host: google.com
+    scan_interval: 60
+  - platform: threshold
+    name: Humdity Threshold
+    entity_id: sensor.kids_room_humidity
+    upper: 55
+
+group: !include groups.yaml
+automation: !include automations.yaml
+
+alert:
+  internet:
+    name: Internet is down!
+    done_message: Internet is working again
+    entity_id: binary_sensor.internet
+    state: 'off'
+    repeat: 5
+    skip_first: true
+    notifiers:
+      - rb
+  dns:
+    name: DNS is down!
+    done_message: DNS is working again
+    entity_id: binary_sensor.dns
+    state: 'off'
+    repeat: 5
+    skip_first: true
+    notifiers:
+      - rb

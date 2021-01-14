@@ -1,0 +1,23 @@
+sensor:
+- platform: darksky
+  api_key: !secret dark_sky_key
+  scan_interval:
+    minutes: 10
+  forecast:
+    - 0
+  monitored_conditions:
+    - precip_intensity
+    - precip_probability
+    - uv_index
+    - wind_speed
+    - temperature
+    - temperature_high
+    - temperature_low
+    - apparent_temperature
+    - apparent_temperature_high
+    - apparent_temperature_low
+    - cloud_cover
+- platform: london_air
+  locations:
+    - City of London
+    - Hillingdon

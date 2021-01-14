@@ -1,0 +1,63 @@
+esphome:
+  name: ${device_name}
+  platform: ESP8266
+  board: esp8285
+  arduino_version: 2.4.2
+
+wifi:
+  ssid:  !secret wifi_ssid
+  password:  !secret wifi_passphrase
+  domain: !secret domain
+
+  ap:
+    ssid: "${device_name} Hotspot"
+    password: !secret hotspot_passphrase
+
+captive_portal:
+logger:
+api:
+
+web_server:
+  port: 80
+  auth:
+    username: admin
+    password: !secret esp_webserver_password
+
+ota:
+  safe_mode: True
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+binary_sensor:
+  - platform: gpio
+    name: "${device_name} button"
+    pin:
+      number: ${button1} 
+      inverted: true
+    on_press:
+      - switch.toggle: relay
+
+switch:
+  - platform: gpio
+    id: relay
+    name: ${device_name}
+    pin: ${relay1}
+    on_turn_on:
+      - light.turn_on: led
+    on_turn_off:
+      - light.turn_off: led
+    restore_mode: ${restore_mode}
+
+output:
+  - platform: esp8266_pwm
+    id: state_led
+    pin:
+      number: ${led1}
+      inverted: ${led1_inverted}
+
+light:
+  - platform: monochromatic
+    output: state_led
+    id: led

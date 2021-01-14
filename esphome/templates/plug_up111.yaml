@@ -1,0 +1,48 @@
+<<: !include plug.yaml
+
+sensor:
+  - platform: uptime
+    name: ${device_name} Uptime
+    filters:
+      - lambda: return x / 3600;
+    unit_of_measurement: "h"
+  - platform: wifi_signal
+    name:  ${device_name} Wifi
+    update_interval: 60s
+  - platform: hlw8012
+    sel_pin:
+      number: GPIO12
+      inverted: True
+    cf_pin: GPIO04
+    cf1_pin: GPIO05
+    # Calibration
+    current_resistor: 0.0025 # Value of shunt resistor in ohms (higher value gives lower watt readout)
+    voltage_divider: 880 # Resistance ratio of internal voltage divider resistors (lower value gives lower voltage readout)   
+    current:
+      name: "${device_name} current"
+      unit_of_measurement: A
+      id: "amperage"
+    voltage:
+      name: "${device_name} voltage"
+      unit_of_measurement: V
+      id: "voltage"
+    power:
+      name: "${device_name} wattage"
+      unit_of_measurement: W
+      id: "wattage"
+    change_mode_every: 8
+    update_interval: 10s
+  - platform: total_daily_energy
+    name: "${device_name} Total Daily Energy"
+    power_id: "wattage"
+    filters:
+        # Multiplication factor from W to kW is 0.001
+        - multiply: 0.001
+    unit_of_measurement: kWh
+  - platform: template
+    name: "${device_name} Apparent Power"
+    unit_of_measurement: VA
+    lambda: return id(voltage).state * id(amperage).state;
+  - platform: template
+    name: "${device_name} Power Factor"
+    lambda: return id(wattage).state / (id(voltage).state * id(amperage).state);

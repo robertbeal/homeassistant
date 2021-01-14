@@ -1,0 +1,4 @@
+media_player:
+  - platform: mpd
+    host: !secret mpd_host
+    name: Kitchen Hifi MPD

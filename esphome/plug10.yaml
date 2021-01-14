@@ -1,0 +1,10 @@
+substitutions:
+  device_name: plug10
+  restore_mode: RESTORE_DEFAULT_ON
+  # https://templates.blakadder.com/anoopsyche_UK1D.html
+  button1: GPIO1
+  led1: GPIO13
+  led1_inverted: "false"
+  relay1: GPIO14
+
+<<: !include templates/plug_uk1d.yaml

@@ -1,0 +1,14 @@
+
+rest_command:
+  healthcheck_ping:
+    url: !secret deadmans_switch_url
+
+automation:
+  - id: healthcheck_ping
+    alias: "Healthcheck Ping"
+    trigger:
+      platform: time_pattern
+      # Ping every 2 minutes
+      minutes: "/2"
+    action:
+      - service: rest_command.healthcheck_ping

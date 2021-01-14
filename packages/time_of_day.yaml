@@ -1,0 +1,48 @@
+binary_sensor:
+  - platform: workday
+    country: UK
+  - platform: tod
+    name: Kids Nap Window
+    after: '12:30'
+    before: '14:30'
+  - platform: tod
+    name: Kids Bathtime
+    after: '17:00'
+    before: '17:45'
+  - platform: tod
+    name: Kids Bedtime
+    after: '17:45'
+    before: '07:30'
+  - platform: tod
+    name: Bedtime
+    after: '22:45'
+    before: '07:30'
+
+sensor:
+  - platform: template
+    sensors:
+      time_of_day:
+        friendly_name: Time Of Day
+        value_template: >-
+          {% if (as_timestamp(states.sun.sun.attributes.next_dusk)) - (as_timestamp(states.sun.sun.attributes.next_setting)) < 0 %}
+            dusk
+          {% elif (as_timestamp(states.sun.sun.attributes.next_rising)) - (as_timestamp(states.sun.sun.attributes.next_dawn)) < 0 %}
+            dawn
+          {% elif (states.sun.sun.attributes.elevation) < -4 %}
+            night
+          {% else %}
+            day
+          {% endif %}
+        icon_template: >-
+          {% if (as_timestamp(states.sun.sun.attributes.next_dusk)) - (as_timestamp(states.sun.sun.attributes.next_setting)) < 0 %}
+            mdi:weather-sunset-down
+          {% elif (as_timestamp(states.sun.sun.attributes.next_rising)) - (as_timestamp(states.sun.sun.attributes.next_dawn)) < 0 %}
+            mdi:weather-sunset-up
+          {% elif (states.sun.sun.attributes.elevation) < -4 %}
+            mdi:weather-night
+          {% else %}
+            mdi:weather-sunny
+          {% endif %}
+  - platform: time_date
+    display_options:
+      - "time"

@@ -1,0 +1,84 @@
+house:
+  name: House
+  entities:
+    - group.lights
+    - switch.plug7
+    - switch.plug8
+    - media_player.marantz_m_cr510
+
+switches:
+  name: Switches
+  entities:
+    - switch.plug5
+    - switch.plug6
+    - switch.plug7
+    - switch.plug8
+    - switch.plug9
+    - switch.plug10
+
+lights:
+  name: Lights
+  entities:
+    - light.hallway
+    - light.landing
+    - light.store
+
+motion:
+  name: Motion
+  entities:
+    - binary_sensor.hallway_motion
+    - binary_sensor.landing_motion
+    - binary_sensor.lounge_motion
+    - binary_sensor.dining_motion
+    - binary_sensor.kitchen_motion
+    - binary_sensor.sliding_door_motion
+
+motion_upstairs:
+  name: Motion Upstairs
+  entities:
+    - binary_sensor.landing_motion
+
+motion_downstairs:
+  name: Motion Downstairs
+  entities:
+    - binary_sensor.hallway_motion
+    - binary_sensor.lounge_motion
+    - binary_sensor.dining_motion
+    - binary_sensor.kitchen_motion
+    - binary_sensor.sliding_door_motion
+
+doors:
+  name: Doors
+  entities:
+    - binary_sensor.front_door
+    - binary_sensor.back_door
+    - binary_sensor.sliding_door
+
+locks:
+  name: Locks
+  entities:
+    - binary_sensor.front_door_lock
+
+media_players:
+  name: Media Players
+  entities:
+    - media_player.marantz_m_cr510
+    - media_player.lounge_kodi
+    - media_player.kitchen_kodi
+
+phones:
+  name: Phones
+  entities:
+    - device_tracker.phone_rb
+    - device_tracker.phone_sn
+    - device_tracker.phone_bb
+
+home_devices:
+  name: Home Devices
+  entities:
+    - device_tracker.laptop_home
+    - device_tracker.laptop_work
+    - device_tracker.laptop_bb
+    - device_tracker.ps4
+    - device_tracker.lounge_chromecast
+    - device_tracker.kitchen_chromecast

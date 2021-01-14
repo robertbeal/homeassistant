@@ -1,0 +1,654 @@
+
+- id: alarm_motion_detected
+  alias: Alarm - Motion Detected
+  trigger:
+    platform: state
+    entity_id:
+      - binary_sensor.hallway_motion
+      - binary_sensor.landing_motion
+      - binary_sensor.lounge_motion
+      - binary_sensor.dining_motion
+      - binary_sensor.kitchen_motion
+      - binary_sensor.sliding_door_motion
+    to: "on"
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: input_boolean.alarm
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.vacuuming
+        state: "off"
+  action:
+    - service: notify.rb
+      data_template:
+        title: "Alarm!!!"
+        message: "{{ trigger.from_state.attributes.friendly_name }} detected"
+
+- id: alarm_door_opened
+  alias: Alarm - Door Opened
+  trigger:
+    platform: state
+    entity_id:
+    - binary_sensor.front_door
+    - binary_sensor.back_door
+    - binary_sensor.sliding_door
+    - binary_sensor.store_door
+    to: "on"
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: input_boolean.alarm
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.vacuuming
+        state: "off"
+  action:
+    - service: notify.rb
+      data_template:
+        title: "Alarm!!!"
+        message: "{{ trigger.from_state.attributes.friendly_name }} opened"
+
+- id: notification_bedtime_forecast
+  alias: Notification - Bedtime forecast
+  trigger:
+    platform: time
+    at: "17:30"
+  action:
+    service: notify.family
+    data:
+      title: "Billy's Bedtime Forecast"
+      message: |
+        Room Temp: {{ states.sensor.kids_bedroom_temperature.state }}{{ states.sensor.kids_bedroom_temperature.attributes["unit_of_measurement"] }}
+        Overnight Low: {{ states.sensor.dark_sky_overnight_low_apparent_temperature_0d.state }}{{ states.sensor.dark_sky_overnight_low_apparent_temperature_0d.attributes["unit_of_measurement"] }}
+
+- id: alert_plants_need_watering
+  alias: Alert - Plants need watering
+  trigger:
+    platform: numeric_state
+    entity_id:
+      - sensor.lucky_plant_moisture
+    below: 5
+  action:
+    service: notify.family
+    data_template:
+      title: "Water the plants"
+      message: "{{ trigger.entity_id }} moisture level is {{ trigger.to_state.state }}%"
+
+- id: alert_water_leak
+  alias: Alert - Water leak
+  trigger:
+    platform: state
+    entity_id: binary_sensor.bathroom_leak, binary_sensor.washing_machine_leak
+    to: "on"
+  action:
+    service: notify.rb
+    data_template:
+      title: "HomeAssistant Alert"
+      message: >
+        Water Leak!!! {{trigger.from_state.attributes.friendly_name}}
+
+- id: alert_certificate_expiry
+  alias: Alert - Certificate expiry
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.pi_hole_certificate, sensor.home_certificate, sensor.tv_certificate, sensor.pifi_certificate
+    below: 14
+  action:
+    service: notify.rb
+    data_template:
+      title: "HomeAssistant Alert"
+      message: >
+        {{trigger.from_state.attributes.friendly_name}} certificate expires in less than {{trigger.from_state.attributes.value}}  days
+
+- id: alert_nzbget_disk_space
+  alias: Alert - NzbGet Disk Space
+  trigger:
+    platform: numeric_state
+    entity_id: sensor.nzbget_disk_free
+    below: 100000
+  action:
+    service: notify.rb
+    data_template:
+      title: "HomeAssistant Alert"
+      message: >
+        NzbGet free disk space is only {{trigger.from_state.attributes.value}}MB
+
+- id: cube_tap
+  alias: Cube Tap
+  trigger:
+    platform: state
+    entity_id: sensor.cube
+    to: "tap"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.kitchen_tv_cot
+
+- id: cube_flip_90
+  alias: Cube Flip 90
+  trigger:
+    platform: state
+    entity_id: sensor.cube
+    to: "flip90"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.kitchen_tv_bed
+
+- id: cube_shake
+  alias: Cube Shake
+  trigger:
+    platform: state
+    entity_id: sensor.cube
+    to: "shake"
+  action:
+    - service: media_player.turn_on
+      entity_id: media_player.marantz_m_cr510
+    - delay:
+        seconds: 10
+    - service: media_player.select_source
+      data:
+        entity_id: media_player.marantz_m_cr510
+        source: AUX:Analog In
+    - service: media_player.volume_set
+      data_template:
+        entity_id: media_player.marantz_m_cr510
+        volume_level: 0.25
+
+- id: dehumidifier_when_away_from_home
+  alias: Dehumidifier when away from home
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.at_home
+      to: "off"
+      for:
+        minutes: 10
+  condition:
+    - condition: state
+      entity_id: binary_sensor.kids_bedtime
+      state: "off"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.plug7
+
+- id: dehumidifier_when_returning_home
+  alias: Dehumidifier when returning home
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.at_home
+      to: "on"
+      from: "off"
+  action:
+    - service: switch.turn_off
+      entity_id: switch.plug7
+
+- id: dehumidifier_on_in_the_morning
+  alias: Dehumidifier on in the morning
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.bedtime
+      to: "off"
+      from: "on"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.plug7
+
+- id: on_holiday_landing_light_on
+  alias: On Holiday - Landing light on
+  trigger:
+    platform: numeric_state
+    entity_id: sun.sun
+    value_template: "{{ state.attributes.elevation }}"
+    below: -3
+  condition:
+    - condition: state
+      entity_id: input_boolean.on_holiday
+      state: "on"
+  action:
+    service: light.turn_on
+    entity_id: light.landing
+
+- id: on_holiday_landing_light_off
+  alias: On Holiday - Landing light off
+  trigger:
+    platform: state
+    entity_id:  binary_sensor.bedtime
+    from: "off"
+    to: "on"
+  condition:
+    - condition: state
+      entity_id: input_boolean.on_holiday
+      state: "on"
+  action:
+    - service: light.turn_on
+      data:
+        entity_id: light.landing
+        brightness: 200
+        rgb_color: [200,150,75]
+
+- id: enable_flux_on_start_up
+  alias: Enable Flux on start up
+  trigger:
+    - event: start
+      platform: homeassistant
+  action:
+    - data:
+        entity_id: switch.fluxer
+      service: switch.turn_on
+
+- id: lounge_lights_evening
+  alias: Lounge lights (evening)
+  trigger:
+    platform: numeric_state
+    entity_id: sun.sun
+    value_template: "{{ state.attributes.elevation }}"
+    below: -2
+  condition:
+    - condition: state
+      entity_id:  binary_sensor.bedtime
+      state: "off"
+  action:
+    - service: switch.turn_on
+      entity_id:
+        - switch.plug6
+
+- id: lounge_lights_morning
+  alias: Lounge lights (morning)
+  trigger:
+    platform: state
+    entity_id:  binary_sensor.bedtime
+    from: "on"
+    to: "off"
+  condition:
+    - condition: numeric_state
+      entity_id: sun.sun
+      value_template: "{{ state.attributes.elevation }}"
+      below: -2
+  action:
+    - service: switch.turn_on
+      entity_id:
+        - switch.plug6
+
+- id: lounge_lights_bedtime
+  alias: Lounge lights (bedtime)
+  trigger:
+    platform: state
+    entity_id:  binary_sensor.bedtime
+    from: "off"
+    to: "on"
+  action:
+    - service: switch.turn_off
+      entity_id:
+        - switch.plug6
+
+- id: lounge_lights_daytime
+  alias: Lounge lights (daytime)
+  trigger:
+    platform: numeric_state
+    entity_id: sun.sun
+    value_template: "{{ state.attributes.elevation }}"
+    above: -2
+  action:
+    - service: switch.turn_off
+      entity_id:
+        - switch.plug6
+
+- id: store_light_door_open
+  alias: Store light (door open)
+  trigger:
+    platform: state
+    entity_id: binary_sensor.store_door
+    to: "on"
+  action:
+    service: light.turn_on
+    entity_id: light.store
+
+- id: store_light_door_closed
+  alias: Store light (door closed)
+  trigger:
+    platform: state
+    entity_id: binary_sensor.store_door
+    to: "off"
+  action:
+    service: light.turn_off
+    entity_id: light.store
+
+- id: kitchen_diner_presence
+  alias: Kitchen/diner presence
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.dining_motion
+        - binary_sensor.kitchen_motion
+        - binary_sensor.sliding_door_motion
+      to: "on"
+  action:
+    - service: timer.start
+      entity_id: timer.hifi_timer
+    - service: media_player.turn_on
+      entity_id: media_player.marantz_m_cr510
+    - delay:
+        seconds: 10
+
+- id: kitchen_diner_empty
+  alias: Kitchen/diner empty
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.hifi_timer
+  condition:
+    condition: and
+    conditions:
+      - condition: state
+        entity_id: binary_sensor.dining_motion
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.kitchen_motion
+        state: "off"
+      - condition: state
+        entity_id: binary_sensor.sliding_door_motion
+        state: "off"
+  action:
+    - service: media_player.turn_off
+      entity_id: media_player.marantz_m_cr510
+
+- id: kitchen_diner_presence_continuous
+  alias: Kitchen/diner presence (continuous)
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.hifi_timer
+  condition:
+    - condition: state
+      entity_id: binary_sensor.dining_motion
+      state: "on"
+    - condition: state
+      entity_id: binary_sensor.kitchen_motion
+      state: "on"
+    - condition: state
+      entity_id: binary_sensor.sliding_door_motion
+      state: "on"
+  action:
+    - service: timer.start
+      entity_id: timer.hifi_timer
+
+- id: hallway_presence
+  alias: Hallway presence
+  trigger:
+    platform: state
+    entity_id: binary_sensor.hallway_motion
+    to: "on"
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.hallway_lux
+      below: 10
+  action:
+    service: light.turn_on
+    entity_id: light.hallway
+
+- id: hallway_empty
+  alias: Hallway empty
+  trigger:
+    platform: state
+    entity_id: binary_sensor.hallway_motion
+    to: "off"
+  action:
+    service: light.turn_off
+    entity_id:  light.hallway
+
+- id: landing_presence
+  alias: Landing presence
+  trigger:
+    platform: state
+    entity_id: binary_sensor.landing_motion
+    to: "on"
+  condition:
+    condition: and
+    conditions:
+      - condition: numeric_state
+        entity_id: sensor.landing_lux
+        below: 10
+      - condition: state
+        entity_id: binary_sensor.kids_bedtime
+        state: "off"
+  action:
+    - service: light.turn_on
+      entity_id: light.landing
+
+- id: landing_empty
+  alias: Landing empty
+  trigger:
+    platform: state
+    entity_id: binary_sensor.landing_motion
+    to: "off"
+  action:
+    - service: light.turn_off
+      entity_id: light.landing
+
+- id: away_from_home
+  alias: Away from home
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.at_home
+      to: "off"
+      for:
+        minutes: 10
+  action:
+    - service: homeassistant.turn_off
+      entity_id: group.house
+
+- id: tv_not_in_use
+  alias: Tv not in use
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.watching_tv
+      from: "on"
+      to: "off"
+      for: 
+        minutes: 5
+  action:
+    - service: homeassistant.turn_off
+      entity_id: switch.lounge_tv
+
+- id: hob_switch
+  alias: Hob switch
+  trigger:
+    - platform: mqtt
+      topic: 'zigbee2mqtt/0x00158d0001e831f9/action'
+  condition:
+    - condition: template
+      value_template: "{{ 'single' == trigger.payload }}"
+  action:
+    - service: switch.toggle
+      entity_id: switch.plug8
+
+- id: hob_switch_auto_off
+  alias: Hob switch (auto-off)
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.dining_motion
+        - binary_sensor.kitchen_motion
+        - binary_sensor.sliding_door_motion
+      to: 'off'
+      for:
+        minutes: 30
+  condition:
+      - condition: state
+        entity_id: binary_sensor.bedtime
+        state: "on"
+  action:
+    - service: switch.turn_off
+      entity_id: switch.plug8
+
+- id: hallway_diffuser
+  alias: Hallway diffuser
+  trigger: 
+    platform: time_pattern
+    minutes: 0
+  condition:
+      - condition: state
+        entity_id: binary_sensor.kids_bedtime
+        state: "off"
+  action:
+    - service: switch.turn_on
+      entity_id: switch.plug5
+    - delay: 00:20:00
+    - service: switch.turn_off
+      entity_id: switch.plug5
+
+- id: vacuuming_daily_reset
+  alias: Vacuuming daily reset
+  trigger:
+    - platform: time
+      at: "07:00:00"
+  action:
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.cleaned_downstairs
+    - service: input_boolean.turn_off
+      entity_id: input_boolean.cleaned_upstairs
+
+- id: vacuuming_upstairs_during_breakfast
+  alias: Vacuum upstairs during breakfast
+  trigger:
+    - platform: time
+      at: "08:30:00"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.stair_gate
+      state: "off"
+  action:
+    - service: vacuum.start
+      entity_id: vacuum.upstairs_robocop
+
+- id: vacuuming_upstairs_during_bathtime
+  alias: Vacuum downstairs during bathtime
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.stair_gate
+      to: "off"
+  condition:
+    - condition: and
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.kids_bathtime
+          state: "on"
+        - condition: state
+          entity_id: binary_sensor.kids_bedtime
+          state: "off"
+  action:
+    - service: vacuum.start
+      entity_id: vacuum.downstairs_robocop
+
+- id: vacuuming_downstairs_when_away_from_home
+  alias: Vacuum downstairs when away from home
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.at_home
+      to: "off"
+      for:
+        minutes: 10
+  condition:
+    - condition: and
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.kids_nap_window
+          state: "off"
+        - condition: state
+          entity_id: binary_sensor.kids_bedtime
+          state: "off"
+        - condition: state
+          entity_id: input_boolean.cleaned_downstairs
+          state: "off"
+  action:
+    - service: vacuum.start
+      entity_id: vacuum.downstairs_robocop
+
+- id: vacuuming_upstairs_when_away_from_home
+  alias: Vacuum upstairs when away from home
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.at_home
+      to: "off"
+      for:
+        minutes: 10
+  condition:
+    - condition: and
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.kids_nap_window
+          state: "off"
+        - condition: state
+          entity_id: binary_sensor.kids_bedtime
+          state: "off"
+        - condition: state
+          entity_id: input_boolean.cleaned_upstairs
+          state: "off"
+  action:
+    - service: vacuum.start
+      entity_id: vacuum.upstairs_robocop
+
+- id: vacuuming_error_alert
+  alias: Vacuuming error alert
+  trigger:
+    - platform: state
+      entity_id: vacuum.downstairs_robocop, vacuum.upstairs_robocop
+      to: "error"
+  action:
+    - service: notify.family
+      data_template:
+        message: >
+          {% if trigger.entity_id == 'vacuum.downstairs_robocop' %}
+            "Vacuuming Error Downstairs..."
+          {% elif trigger.entity_id == 'vacuum.upstairs_robocop' %}
+            "Vacuuming Error Upstairs..."
+          {% endif %}
+
+- id: vacuming_finisheds
+  alias: Vacuuming finished
+  trigger:
+    - platform: state
+      entity_id: vacuum.downstairs_robocop, vacuum.upstairs_robocop
+      to: "returning"
+      from: "cleaning"
+  condition:
+    condition: template
+    value_template: "{{ trigger.to_state.attributes.cleaned_area >= 20 }}"
+  action:
+    - service: input_boolean.turn_on
+      data_template:
+        entity_id: >
+          {% if trigger.entity_id == 'vacuum.downstairs_robocop' %}
+            finput_boolean.cleaned_downstairs
+          {% elif trigger.entity_id == 'vacuum.upstairs_robocop' %}
+            input_boolean.cleaned_upstairs
+          {% endif %}
+
+- id: vacuuming_return_if_presence
+  alias: Vacuuming return if presence
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.at_home
+      to: "on"
+  action:
+    - service: vacuum.return_to_base
+      entity_id: group.vacuum_cleaners
+
+- id: cast_cotcam_to_dining_tv
+  alias: Cast cot-cam (To Dining Tv)
+  trigger:
+    - platform: time
+      at: "07:00:00"
+    - platform: time
+      at: "12:00:00"
+    - platform: time
+      at: "17:00:00"
+    - platform: time
+      at: "18:30:00"
+  action:
+    - service: homeassistant.turn_on
+      entity_id:
+        - switch.kitchen_tv_cot

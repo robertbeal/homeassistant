@@ -1,0 +1,55 @@
+
+binary_sensor:
+  - platform: template
+    sensors:
+      motion:
+        friendly_name: Motion
+        value_template: "{{ is_state('group.motion', 'on') and is_state('binary_sensor.vacuuming', 'off') }}"
+        delay_off:
+          minutes: 1
+  - platform: bayesian
+    name: In Bed
+    prior: 0.33 # % chance that we are in bed (8 hrs out of 24hrs)
+    probability_threshold: 0.9
+    observations:
+      - entity_id: binary_sensor.bedtime
+        platform: state
+        to_state: 'on'
+        prob_given_true: 0.7
+      - entity_id: binary_sensor.bed_presence
+        platform: state
+        to_state: 'on'
+        prob_given_true: 0.7
+      - entity_id: group.home_devices
+        platform: state
+        to_state: 'away'
+        prob_given_true: 0.7
+      - entity_id: binary_sensor.motion
+        platform: state
+        to_state: 'off'
+        prob_given_true: 0.8
+  - platform: bayesian
+    name: At Home
+    prior: 0.66 # rough % of the day spent in the house
+    probability_threshold: 0.9
+    observations:
+      - entity_id: binary_sensor.front_door_lock
+        platform: state
+        to_state: 'off' 
+        prob_given_true: 0.8
+        prob_given_false: 0.1
+      - entity_id: group.phones
+        platform: state
+        to_state: home
+        prob_given_true: 0.8
+        prob_given_false: 0.2
+      - entity_id: group.home_devices
+        platform: state
+        to_state: home
+        prob_given_true: 0.8
+        prob_given_false: 0.6
+      - entity_id: binary_sensor.motion
+        platform: state
+        to_state: 'on'
+        prob_given_true: 0.8
+        prob_given_false: 0.5

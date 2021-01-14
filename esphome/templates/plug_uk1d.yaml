@@ -1,0 +1,11 @@
+<<: !include plug.yaml
+
+sensor:
+  - platform: uptime
+    name: ${device_name} Uptime
+    filters:
+      - lambda: return x / 3600;
+    unit_of_measurement: "h"
+  - platform: wifi_signal
+    name:  ${device_name} Wifi
+    update_interval: 60s

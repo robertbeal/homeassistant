@@ -1,0 +1,13 @@
+alarm_control_panel:
+  - platform: manual
+    name: house
+    code: 2016
+    code_arm_required: false
+    armed_night:
+      arming_time: 120
+      delay_time: 0
+      trigger_time: 120
+    armed_away:
+      arming_time: 60
+      delay_time: 0
+      trigger_time: 60

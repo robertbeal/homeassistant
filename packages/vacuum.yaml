@@ -1,0 +1,23 @@
+vacuum:
+  - platform: xiaomi_miio
+    name: Downstairs Robocop
+    host: !secret xiaomi_robovac_downstairs_host
+    token: !secret xiaomi_robovac_downstairs_token
+  - platform: xiaomi_miio
+    name: Upstairs Robocop
+    host: !secret xiaomi_robovac_upstairs_host
+    token: !secret xiaomi_robovac_upstairs_token
+
+binary_sensor:
+  - platform: template
+    sensors:
+      vacuuming:
+        friendly_name: Vacuuming
+        value_template: "{{ 
+          is_state('vacuum.downstairs_robocop', 'cleaning')
+          or is_state('vacuum.downstairs_robocops', 'returning')
+          or is_state('vacuum.upstairs_robocop', 'cleaning')
+          or is_state('vacuum.upstairs_robocop', 'returning')
+        }}"
+        delay_off:
+          minutes: 2

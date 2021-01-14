@@ -1,0 +1,18 @@
+notify:
+  - name: family
+    platform: group
+    services:
+      - service: rb
+      - service: sn
+  - name: rb
+    platform: signal_messenger
+    url: !secret notifiers_signal_url
+    number: !secret phone_number_homeassistant
+    recipients:
+      - !secret phone_number_rb
+  - name: sn
+    platform: signal_messenger
+    url: !secret notifiers_signal_url
+    number: !secret phone_number_homeassistant
+    recipients:
+      - !secret phone_number_sn

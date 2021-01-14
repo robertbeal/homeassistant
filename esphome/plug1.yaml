@@ -1,0 +1,10 @@
+substitutions:
+  device_name: plug1
+  restore_mode: RESTORE_DEFAULT_OFF
+  # https://templates.blakadder.com/gosund_UP111.html
+  button1: GPIO3
+  led1: GPIO1
+  led1_inverted: "true"
+  relay1: GPIO14
+
+<<: !include templates/plug_up111.yaml
