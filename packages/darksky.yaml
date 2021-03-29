@@ -17,7 +17,3 @@ sensor:
     - apparent_temperature_high
     - apparent_temperature_low
     - cloud_cover
-- platform: london_air
-  locations:
-    - City of London
-    - Hillingdon
